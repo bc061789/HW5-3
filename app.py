@@ -1,20 +1,8 @@
 import streamlit as st
-import sys
-import subprocess
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.dml.color import RGBColor
 from io import BytesIO
-
-# 自動確認 python-pptx 已安裝
-def ensure_pptx():
-    try:
-        from pptx import Presentation
-        from pptx.util import Inches, Pt
-        from pptx.dml.color import RGBColor
-    except ModuleNotFoundError:
-        subprocess.run([sys.executable, "-m", "pip", "install", "python-pptx"], check=True)
-        from pptx import Presentation
-        from pptx.util import Inches, Pt
-        from pptx.dml.color import RGBColor
-    return Presentation, Inches, Pt, RGBColor
 
 st.set_page_config(page_title="AI PPT Re-Designer", page_icon="🧠")
 st.title("🧠 AI PowerPoint 版型重新設計 Demo")
@@ -23,9 +11,6 @@ uploaded = st.file_uploader("請上傳 PPTX 檔案", type=["pptx"])
 style = st.radio("選擇風格", ["科技藍 Tech Style", "極簡白 Minimal Style"])
 
 if uploaded and st.button("🚀 產生新的 PPT"):
-
-    Presentation, Inches, Pt, RGBColor = ensure_pptx()
-
     old = Presentation(uploaded)
     new = Presentation()
 
