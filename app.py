@@ -1,55 +1,92 @@
-import streamlit as st
-from io import BytesIO
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.dml.color import RGBColor
 
-st.set_page_config(page_title="AI PPT Re-Designer", page_icon="🧠")
-st.title("🧠 AI PowerPoint 版型重新設計 Demo")
+# 共用：原始簡報結構內容
+slides_content = [
+    ("AI 在零售業的應用", "從需求預測到智慧販賣機"),
+    ("AI 應用概述", "．需求預測\n．推薦系統\n．自動補貨"),
+    ("需求預測流程", "1. 資料蒐集\n2. 資料清洗\n3. 模型訓練\n4. 上線部署"),
+    ("案例：智慧販賣機", "依據天氣、時間與銷售紀錄，自動推薦與補貨"),
+    ("結語", "AI 正在改變零售業的營運模式與顧客體驗")
+]
 
-st.markdown("""
-這個 demo 示範：
+# 版本 A：科技藍風格
+prs_tech = Presentation()
+for title_text, body_text in slides_content:
+    slide_layout = prs_tech.slide_layouts[6]  # blank
+    slide = prs_tech.slides.add_slide(slide_layout)
 
-1. 上傳一份原始 PPTX
-2. 選擇一種 AI 版型風格
-3. 由 AI 給出排版建議與說明（不直接修改檔案）
+    # 深藍背景
+    fill = slide.background.fill
+    fill.solid()
+    fill.fore_color.rgb = RGBColor(8, 24, 72)
 
-實際重新設計後的兩種 PPT 檔案，已在報告中另外提供。
-""")
+    # 標題
+    title_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.7), Inches(8.5), Inches(1))
+    tf_title = title_box.text_frame
+    p = tf_title.paragraphs[0]
+    run = p.add_run()
+    run.text = title_text
+    run.font.size = Pt(40)
+    run.font.bold = True
+    run.font.color.rgb = RGBColor(255, 255, 255)
 
-uploaded = st.file_uploader("請上傳 PPTX 檔案", type=["pptx"])
+    # 內文
+    body_box = slide.shapes.add_textbox(Inches(1.0), Inches(1.8), Inches(8.2), Inches(4))
+    tf_body = body_box.text_frame
+    tf_body.word_wrap = True
+    p_body = tf_body.paragraphs[0]
+    run_body = p_body.add_run()
+    run_body.text = body_text
+    run_body.font.size = Pt(24)
+    run_body.font.color.rgb = RGBColor(220, 230, 255)
 
-style = st.radio("選擇想要的風格", ["科技藍 Tech Style", "極簡白 Minimal Style"])
+prs_tech.save("/mnt/data/retail_ai_tech_style.pptx")
 
-if uploaded:
-    st.success("✅ 已上傳檔案：{}".format(uploaded.name))
+# 版本 B：極簡白風格
+prs_min = Presentation()
+for title_text, body_text in slides_content:
+    slide_layout = prs_min.slide_layouts[6]  # blank
+    slide = prs_min.slides.add_slide(slide_layout)
 
-    if st.button("✨ 產生 AI 排版建議"):
-        # 讀檔大小只是做個小展示，證明有真的收到檔案
-        file_bytes = uploaded.getbuffer()
-        st.write(f"檔案大小：約 {len(file_bytes) / 1024:.1f} KB")
+    # 白底
+    fill = slide.background.fill
+    fill.solid()
+    fill.fore_color.rgb = RGBColor(255, 255, 255)
 
-        if style == "科技藍 Tech Style":
-            st.subheader("🎨 科技藍 Tech Style 排版建議")
-            st.markdown("""
-- **配色**：深藍＋白色文字，加入一點漸層或霓虹感線條做科技感背景  
-- **標題頁**：大標題置中，底部加上細線或微光效果  
-- **內容頁**：每一頁最多 3 個重點，搭配簡單 icon  
-- **流程頁**：用水平流程圖（Step1~4），每個步驟用圓角方塊＋淡光暈  
-- **結語頁**：保留大量留白，只放一句總結句搭配小圖示
-            """)
-        else:
-            st.subheader("🧼 極簡白 Minimal Style 排版建議")
-            st.markdown("""
-- **配色**：純白背景＋深灰文字，點綴一點米色或淺金色線條  
-- **標題頁**：左上對齊標題，右下角一條細線做裝飾  
-- **內容頁**：文字靠左、圖示小小的放在文字前，不使用粗重的框線  
-- **流程頁**：垂直排列 4 個步驟，使用編號 1–4 + 簡短描述  
-- **結語頁**：一行簡短總結文字＋很小的 logo 或圖示，整頁幾乎都是留白
-            """)
+    # 左側細線裝飾
+    line = slide.shapes.add_shape(
+        1,  # rectangle
+        Inches(0.7),
+        Inches(0.7),
+        Inches(0.05),
+        Inches(5.5)
+    )
+    line.fill.solid()
+    line.fill.fore_color.rgb = RGBColor(210, 180, 90)
+    line.line.fill.background()
 
-        st.info("""
-👉 實作說明：  
-此 Demo 由 Streamlit + ChatGPT 產生版型建議文字。  
-實際重新設計後的兩種 PPT 檔案（科技藍版、極簡白版），
-是依照這些建議在 PowerPoint 中完成，並附在報告與 GitHub Repo。
-""")
-else:
-    st.info("請先上傳一份 PPTX 檔案。")
+    # 標題
+    title_box = slide.shapes.add_textbox(Inches(1.1), Inches(0.7), Inches(8.0), Inches(1))
+    tf_title = title_box.text_frame
+    p = tf_title.paragraphs[0]
+    run = p.add_run()
+    run.text = title_text
+    run.font.size = Pt(36)
+    run.font.bold = True
+    run.font.color.rgb = RGBColor(40, 40, 40)
+
+    # 內文
+    body_box = slide.shapes.add_textbox(Inches(1.3), Inches(1.7), Inches(7.5), Inches(4.5))
+    tf_body = body_box.text_frame
+    tf_body.word_wrap = True
+    p_body = tf_body.paragraphs[0]
+    run_body = p_body.add_run()
+    run_body.text = body_text
+    run_body.font.size = Pt(22)
+    run_body.font.color.rgb = RGBColor(70, 70, 70)
+
+prs_min.save("/mnt/data/retail_ai_minimal_style.pptx")
+
+"/mnt/data/retail_ai_tech_style.pptx", "/mnt/data/retail_ai_minimal_style.pptx"
